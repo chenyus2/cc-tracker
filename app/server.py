@@ -342,9 +342,13 @@ def seed_if_empty():
     count = conn.execute("SELECT COUNT(*) FROM cards").fetchone()[0]
     conn.close()
     if count == 0:
-        import seed_cards
-        import seed_rewards
-        import seed_coupons
+        import subprocess
+        import sys
+        import os
+        app_dir = os.path.dirname(os.path.abspath(__file__))
+        subprocess.run([sys.executable, os.path.join(app_dir, "seed_cards.py")], check=True)
+        subprocess.run([sys.executable, os.path.join(app_dir, "seed_rewards.py")], check=True)
+        subprocess.run([sys.executable, os.path.join(app_dir, "seed_coupons.py")], check=True)
         print("Database seeded.")
 
 
