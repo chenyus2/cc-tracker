@@ -1,7 +1,7 @@
 from db import get_db, init_db
 
 cards = [
-    {"name": "Amex Gold", "issuer": "AMEX", "open_date": "2019-05-02", "annual_fee": 250},
+    {"name": "Amex Gold", "issuer": "AMEX", "open_date": "2019-05-02", "annual_fee": 325},
     {"name": "Amex Blue Cash Everyday", "issuer": "AMEX", "open_date": "2022-11-05", "annual_fee": 0},
     {"name": "Amex Blue Cash Preferred", "issuer": "AMEX", "open_date": "2022-04-27", "annual_fee": 95},
     {"name": "Apple Card", "issuer": "APPLE", "open_date": "2019-08-12", "annual_fee": 0},
