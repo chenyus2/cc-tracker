@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% set active_page = "dashboard" %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Cards</div>
+        <div class="value">{{ cards | length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Annual Fees</div>
+        <div class="value {% if total_annual_fees > 0 %}negative{% endif %}">${{ "%.0f"|format(total_annual_fees) }}/yr</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Active Coupons</div>
+        <div class="value">{{ active_coupons | length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Categories Covered</div>
+        <div class="value">{{ best | length }} / {{ categories | length }}</div>
+    </div>
+</div>
+
+<!-- Best Card by Category -->
+<div class="section-title">Best Card by Category</div>
+{% if best %}
+<div style="display: grid; gap: 16px; margin-bottom: 32px;">
+    {% for cat in best %}
+    <div class="card-section" style="padding: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <h3 style="font-size: 15px; margin: 0;">{{ cat.category }}</h3>
+            <span class="positive" style="font-size: 13px; font-weight: 600;">Best: {{ cat.top.percent }}%</span>
+        </div>
+        <table style="margin: 0;">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Card</th>
+                    <th>Reward</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in cat.ranking %}
+                <tr style="{% if loop.index == 1 %}background: #23863611;{% endif %}">
+                    <td style="color: #8b949e; font-weight: 600;">{{ loop.index }}</td>
+                    <td>
+                        <strong{% if loop.index == 1 %} class="positive"{% endif %}>{{ r.card }}</strong>
+                        <span style="color:#8b949e; font-size:12px;">{{ r.issuer }}</span>
+                    </td>
+                    <td style="font-weight: 700;{% if loop.index == 1 %} color: #3fb950;{% endif %}">{{ r.percent }}%</td>
+                    <td><span class="badge badge-{{ r.type }}">{{ r.type }}</span></td>
+                    <td style="font-size: 12px; color: #8b949e;">{{ r.notes or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="margin-bottom: 32px;">
+    <p>No reward rules set up yet. Go to <a href="/cards" style="color:#58a6ff;">Cards</a> to add cashback categories.</p>
+</div>
+{% endif %}
+
+<!-- Active Coupons -->
+<div class="section-title">Active Coupons & Offers</div>
+{% if active_coupons %}
+<div style="display: grid; gap: 10px; margin-bottom: 32px;">
+    {% for c in active_coupons %}
+    <div class="coupon-card">
+        <div>
+            <div style="font-weight: 600;">{{ c.title }}</div>
+            <div style="font-size: 12px; color: #8b949e;">
+                {{ c.card_name }}
+                {% if c.merchant %} &middot; {{ c.merchant }}{% endif %}
+                {% if c.end_date %} &middot; Expires {{ c.end_date }}{% endif %}
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            {% if c.discount_value %}
+            <span class="positive" style="font-weight: 700; font-size: 18px;">
+                {% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}${{ c.discount_value }}{% endif %} off
+            </span>
+            {% endif %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/use" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-primary">Mark Used</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="margin-bottom: 32px;">
+    <p>No active coupons. Go to <a href="/coupons" style="color:#58a6ff;">Coupons</a> to add offers.</p>
+</div>
+{% endif %}
+
+<!-- Cards Overview -->
+<div class="section-title">All Cards</div>
+<table>
+    <thead>
+        <tr>
+            <th>Card</th>
+            <th>Issuer</th>
+            <th>Opened</th>
+            <th>Age</th>
+            <th>Annual Fee</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td><strong>{{ card.name }}</strong></td>
+            <td>{{ card.issuer }}</td>
+            <td>{{ card.open_date or '-' }}</td>
+            <td style="color: #8b949e;">{{ card.age }}</td>
+            <td>{% if card.annual_fee %}${{ "%.0f"|format(card.annual_fee) }}{% else %}$0{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

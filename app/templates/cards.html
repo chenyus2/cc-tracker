@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% set active_page = "cards" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-bottom: 0;">My Cards</h2>
+    <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" onclick="openModal('addCatModal')">+ Category</button>
+        <button class="btn btn-primary" onclick="openModal('addCardModal')">+ Add Card</button>
+    </div>
+</div>
+
+{% if cards %}
+{% for card in cards %}
+<div class="card-section">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h3 style="margin-bottom: 4px;">{{ card.name }}</h3>
+            <p style="font-size: 13px; color: #8b949e;">
+                {{ card.issuer or '' }}
+                {% if card.last_four %} &middot; •••• {{ card.last_four }}{% endif %}
+                {% if card.open_date %} &middot; Opened {{ card.open_date }}{% endif %}
+                {% if card.annual_fee %} &middot; ${{ "%.0f"|format(card.annual_fee) }}/yr{% endif %}
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm btn-secondary" onclick="openEditModal({{ card.id }}, '{{ card.name }}', '{{ card.issuer or '' }}', '{{ card.last_four or '' }}', {{ card.annual_fee or 0 }}, '{{ card.open_date or '' }}', '{{ card.notes or '' }}')">Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="openRewardModal({{ card.id }})">+ Reward</button>
+            <form method="POST" action="/api/cards/{{ card.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('Delete this card and all its data?')">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    {% if card.rewards %}
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Reward %</th>
+                <th>Type</th>
+                <th>Valid Period</th>
+                <th>Notes</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in card.rewards %}
+            <tr>
+                <td>{{ r.category_name }}</td>
+                <td class="positive" style="font-weight:700;">{{ r.reward_percent }}%</td>
+                <td>
+                    <span class="badge badge-{{ r.reward_type }}">{{ r.reward_type }}</span>
+                    {% if r.is_rotating %}<span class="badge badge-rotating">rotating</span>{% endif %}
+                </td>
+                <td style="font-size: 12px; color: #8b949e;">
+                    {% if r.start_date or r.end_date %}
+                        {{ r.start_date or '...' }} &rarr; {{ r.end_date or 'ongoing' }}
+                    {% else %}Always{% endif %}
+                </td>
+                <td style="font-size: 12px; color: #8b949e;">{{ r.notes or '' }}</td>
+                <td>
+                    <form method="POST" action="/api/rewards/{{ r.id }}/delete" style="display:inline">
+                        <button type="submit" class="delete-btn">✕</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="margin-top: 12px; font-size: 13px; color: #8b949e;">No reward rules yet.</p>
+    {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <p>No cards added yet.</p>
+</div>
+{% endif %}
+
+<!-- Add Card Modal -->
+<div class="modal-overlay" id="addCardModal">
+    <div class="modal">
+        <h3>Add Credit Card</h3>
+        <form method="POST" action="/api/cards">
+            <div class="form-group">
+                <label>Card Name</label>
+                <input type="text" name="name" required placeholder="e.g. Chase Freedom Flex">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Issuer</label>
+                    <input type="text" name="issuer" placeholder="e.g. Chase">
+                </div>
+                <div class="form-group">
+                    <label>Last 4 Digits</label>
+                    <input type="text" name="last_four" maxlength="4" placeholder="1234">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Annual Fee ($)</label>
+                    <input type="number" name="annual_fee" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Open Date</label>
+                    <input type="date" name="open_date">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" name="notes" placeholder="Optional">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addCardModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Card</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Card Modal -->
+<div class="modal-overlay" id="editCardModal">
+    <div class="modal">
+        <h3>Edit Card</h3>
+        <form method="POST" id="editCardForm">
+            <div class="form-group">
+                <label>Card Name</label>
+                <input type="text" name="name" id="editName" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Issuer</label>
+                    <input type="text" name="issuer" id="editIssuer">
+                </div>
+                <div class="form-group">
+                    <label>Last 4 Digits</label>
+                    <input type="text" name="last_four" id="editLastFour" maxlength="4">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Annual Fee ($)</label>
+                    <input type="number" name="annual_fee" id="editFee" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Open Date</label>
+                    <input type="date" name="open_date" id="editOpenDate">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" name="notes" id="editNotes">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editCardModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Reward Modal -->
+<div class="modal-overlay" id="addRewardModal">
+    <div class="modal">
+        <h3>Add Reward Rule</h3>
+        <form method="POST" action="/api/rewards">
+            <input type="hidden" name="card_id" id="rewardCardId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category_id" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Reward %</label>
+                    <input type="number" name="reward_percent" step="0.1" required placeholder="e.g. 5">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="reward_type">
+                        <option value="cashback">Cashback</option>
+                        <option value="points">Points</option>
+                        <option value="miles">Miles</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="visibility:hidden;">x</label>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; text-transform:none; letter-spacing:0;">
+                        <input type="checkbox" name="is_rotating" value="1"> Rotating category
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Date (optional)</label>
+                    <input type="date" name="start_date">
+                </div>
+                <div class="form-group">
+                    <label>End Date (optional)</label>
+                    <input type="date" name="end_date">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" name="notes" placeholder="e.g. Q2 2026 rotating category">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addRewardModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Rule</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal-overlay" id="addCatModal">
+    <div class="modal">
+        <h3>Add Category</h3>
+        <form method="POST" action="/api/categories">
+            <div class="form-group">
+                <label>Category Name</label>
+                <input type="text" name="name" required placeholder="e.g. Subscriptions">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addCatModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openRewardModal(cardId) {
+    document.getElementById('rewardCardId').value = cardId;
+    openModal('addRewardModal');
+}
+
+function openEditModal(id, name, issuer, lastFour, fee, openDate, notes) {
+    document.getElementById('editCardForm').action = `/api/cards/${id}/update`;
+    document.getElementById('editName').value = name;
+    document.getElementById('editIssuer').value = issuer;
+    document.getElementById('editLastFour').value = lastFour;
+    document.getElementById('editFee').value = fee;
+    document.getElementById('editOpenDate').value = openDate;
+    document.getElementById('editNotes').value = notes;
+    openModal('editCardModal');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% set active_page = "coupons" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-bottom: 0;">Coupons & Offers</h2>
+    <div style="display: flex; gap: 8px; align-items: center;">
+        {% if hidden_count > 0 %}
+        <a href="/coupons{% if not show_hidden %}?show_hidden=1{% endif %}"
+           class="btn btn-sm btn-secondary">
+            {% if show_hidden %}Hide Hidden ({{ hidden_count }}){% else %}Show Hidden ({{ hidden_count }}){% endif %}
+        </a>
+        {% endif %}
+        <button class="btn btn-primary" onclick="openModal('addCouponModal')">+ Add Coupon</button>
+    </div>
+</div>
+
+<!-- This Month -->
+<div class="section-title">This Month ({{ this_month | length }})</div>
+{% if this_month %}
+<div style="display: grid; gap: 10px; margin-bottom: 24px;">
+    {% for c in this_month %}
+    <div class="coupon-card" style="{% if c.hidden %}opacity: 0.5; border-style: dashed;{% endif %}">
+        <div>
+            <div style="font-weight: 600;">{{ c.title }}</div>
+            <div style="font-size: 12px; color: #8b949e;">
+                {{ c.card_name }}
+                {% if c.merchant %} &middot; {{ c.merchant }}{% endif %}
+                {% if c.min_spend %} &middot; Min ${{ "%.0f"|format(c.min_spend) }}{% endif %}
+                &middot; Expires {{ c.end_date }}
+            </div>
+            {% if c.notes %}<div style="font-size: 12px; color: #8b949e; margin-top: 2px;">{{ c.notes }}</div>{% endif %}
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            {% if c.discount_value %}
+            <span class="positive" style="font-weight: 700; font-size: 18px;">
+                {% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}${{ c.discount_value }}{% endif %} off
+            </span>
+            {% endif %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/use" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-primary">Used</button>
+            </form>
+            {% if c.hidden %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/unhide" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-secondary">Unhide</button>
+            </form>
+            {% else %}
+            <form method="POST" action="/api/coupons/hide-by-title" style="display:inline;">
+                <input type="hidden" name="title" value="{{ c.title }}">
+                <input type="hidden" name="card_id" value="{{ c.card_id }}">
+                <button type="submit" class="btn btn-sm btn-secondary">Hide</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/delete" style="display:inline;">
+                <button type="submit" class="delete-btn">✕</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="margin-bottom: 24px; padding: 24px;">
+    <p>All credits used this month!</p>
+</div>
+{% endif %}
+
+<!-- Active This Period (semi-annual / annual still open) -->
+{% if this_period %}
+<div class="section-title">Active This Period ({{ this_period | length }})</div>
+<div style="display: grid; gap: 10px; margin-bottom: 24px;">
+    {% for c in this_period %}
+    <div class="coupon-card" style="{% if c.hidden %}opacity: 0.5; border-style: dashed;{% endif %}">
+        <div>
+            <div style="font-weight: 600;">{{ c.title }}</div>
+            <div style="font-size: 12px; color: #8b949e;">
+                {{ c.card_name }}
+                {% if c.merchant %} &middot; {{ c.merchant }}{% endif %}
+                {% if c.min_spend %} &middot; Min ${{ "%.0f"|format(c.min_spend) }}{% endif %}
+                &middot; {{ c.start_date }} &rarr; {{ c.end_date }}
+            </div>
+            {% if c.notes %}<div style="font-size: 12px; color: #8b949e; margin-top: 2px;">{{ c.notes }}</div>{% endif %}
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            {% if c.discount_value %}
+            <span class="positive" style="font-weight: 700; font-size: 18px;">
+                {% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}${{ c.discount_value }}{% endif %} off
+            </span>
+            {% endif %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/use" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-primary">Used</button>
+            </form>
+            {% if c.hidden %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/unhide" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-secondary">Unhide</button>
+            </form>
+            {% else %}
+            <form method="POST" action="/api/coupons/hide-by-title" style="display:inline;">
+                <input type="hidden" name="title" value="{{ c.title }}">
+                <input type="hidden" name="card_id" value="{{ c.card_id }}">
+                <button type="submit" class="btn btn-sm btn-secondary">Hide</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/delete" style="display:inline;">
+                <button type="submit" class="delete-btn">✕</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Future Months -->
+{% if future %}
+<div class="section-title" style="color: #8b949e;">Future Months ({{ future | length }})</div>
+<div style="display: grid; gap: 10px; margin-bottom: 32px; opacity: 0.7;">
+    {% for c in future %}
+    <div class="coupon-card" style="{% if c.hidden %}opacity: 0.5; border-style: dashed;{% endif %}">
+        <div>
+            <div style="font-weight: 600;">{{ c.title }}</div>
+            <div style="font-size: 12px; color: #8b949e;">
+                {{ c.card_name }}
+                {% if c.merchant %} &middot; {{ c.merchant }}{% endif %}
+                &middot; {{ c.start_date }} &rarr; {{ c.end_date }}
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            {% if c.discount_value %}
+            <span style="font-weight: 600; font-size: 16px; color: #8b949e;">
+                {% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}${{ c.discount_value }}{% endif %}
+            </span>
+            {% endif %}
+            {% if c.hidden %}
+            <form method="POST" action="/api/coupons/{{ c.id }}/unhide" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-secondary">Unhide</button>
+            </form>
+            {% else %}
+            <form method="POST" action="/api/coupons/hide-by-title" style="display:inline;">
+                <input type="hidden" name="title" value="{{ c.title }}">
+                <input type="hidden" name="card_id" value="{{ c.card_id }}">
+                <button type="submit" class="btn btn-sm btn-secondary">Hide</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Used -->
+{% if used %}
+<div class="section-title">Recently Used ({{ used | length }})</div>
+<table style="margin-bottom: 32px; opacity: 0.7;">
+    <thead>
+        <tr><th>Coupon</th><th>Card</th><th>Discount</th><th>Used On</th></tr>
+    </thead>
+    <tbody>
+        {% for c in used %}
+        <tr>
+            <td>{{ c.title }}{% if c.merchant %} ({{ c.merchant }}){% endif %}</td>
+            <td>{{ c.card_name }}</td>
+            <td>{% if c.discount_value %}{% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}${{ c.discount_value }}{% endif %}{% endif %}</td>
+            <td>{{ c.used_date or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- Expired -->
+{% if expired %}
+<div class="section-title" style="color: #8b949e;">Expired ({{ expired | length }})</div>
+<table style="opacity: 0.5;">
+    <thead>
+        <tr><th>Coupon</th><th>Card</th><th>Discount</th><th>Expired</th></tr>
+    </thead>
+    <tbody>
+        {% for c in expired %}
+        <tr>
+            <td>{{ c.title }}{% if c.merchant %} ({{ c.merchant }}){% endif %}</td>
+            <td>{{ c.card_name }}</td>
+            <td>{% if c.discount_value %}{% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}${{ c.discount_value }}{% endif %}{% endif %}</td>
+            <td>{{ c.end_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- Add Coupon Modal -->
+<div class="modal-overlay" id="addCouponModal">
+    <div class="modal">
+        <h3>Add Coupon / Offer</h3>
+        <form method="POST" action="/api/coupons">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" required placeholder="e.g. 10% back at restaurants">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Card</label>
+                    <select name="card_id" required>
+                        {% for card in cards %}
+                        <option value="{{ card.id }}">{{ card.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Merchant (optional)</label>
+                    <input type="text" name="merchant" placeholder="e.g. Amazon">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Discount Type</label>
+                    <select name="discount_type">
+                        <option value="percent">Percent off</option>
+                        <option value="dollar">Dollar off</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Discount Value</label>
+                    <input type="number" name="discount_value" step="0.01" placeholder="e.g. 10">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Min Spend ($)</label>
+                    <input type="number" name="min_spend" step="0.01" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" name="end_date">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" name="notes" placeholder="Optional">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addCouponModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
