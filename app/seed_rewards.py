@@ -32,10 +32,11 @@ rewards = [
     (cards["Apple Card"], cats["Online Shopping"], "cashback", 3, "Apple Store, Nike, Uber, T-Mobile, Walgreens, etc."),
     (cards["Apple Card"], cats["Transit"], "cashback", 3, "Uber, ride-share via Apple Pay"),
     (cards["Apple Card"], cats["Drug Stores"], "cashback", 3, "Walgreens only"),
+    (cards["Apple Card"], cats["Wholesale Clubs"], "cashback", 2, "Via Apple Pay"),
     (cards["Apple Card"], cats["Other"], "cashback", 2, "Via Apple Pay; 1% with physical card"),
 
-    # BofA Customized Cash Rewards - $0/yr, 3% choice category, 2% grocery/wholesale, 1% other ($2500/qtr combined cap on bonus categories)
-    (cards["BofA Customized Cash Rewards"], cats["Online Shopping"], "cashback", 3, "Choice category - $2500/qtr combined cap"),
+    # BofA Customized Cash Rewards - $0/yr, 3% choice category (currently Dining), 2% grocery/wholesale, 1% other ($2500/qtr combined cap on bonus categories)
+    (cards["BofA Customized Cash Rewards"], cats["Dining"], "cashback", 3, "Choice category - $2500/qtr combined cap"),
     (cards["BofA Customized Cash Rewards"], cats["Groceries"], "cashback", 2, "$2500/qtr cap"),
     (cards["BofA Customized Cash Rewards"], cats["Wholesale Clubs"], "cashback", 2, "$2500/qtr cap"),
     (cards["BofA Customized Cash Rewards"], cats["Other"], "cashback", 1, None),
@@ -65,8 +66,9 @@ rewards = [
     (cards["Chase United Quest"], cats["Streaming"], "miles", 2, "Select streaming services"),
     (cards["Chase United Quest"], cats["Other"], "miles", 1, None),
 
-    # Chase Sapphire Preferred - $95/yr, 5x Chase Travel, 3x dining/streaming/online grocery, 2x other travel, 1x other
+    # Chase Sapphire Preferred - $95/yr, 5x Chase Travel, 5x Lyft, 3x dining/streaming/online grocery, 2x other travel, 1x other
     (cards["Chase Sapphire Preferred"], cats["Travel"], "points", 5, "Chase Travel portal; 2x other travel bookings"),
+    (cards["Chase Sapphire Preferred"], cats["Transit"], "points", 5, "Lyft only (through 9/30/2027); 2x Uber & other rideshare"),
     (cards["Chase Sapphire Preferred"], cats["Dining"], "points", 3, None),
     (cards["Chase Sapphire Preferred"], cats["Streaming"], "points", 3, "Select streaming"),
     (cards["Chase Sapphire Preferred"], cats["Groceries"], "points", 3, "Online grocery delivery only"),
@@ -87,6 +89,10 @@ rewards = [
     (cards["Robinhood Gold Card"], cats["Streaming"], "cashback", 3, None),
     (cards["Robinhood Gold Card"], cats["Transit"], "cashback", 3, None),
     (cards["Robinhood Gold Card"], cats["Drug Stores"], "cashback", 3, None),
+    (cards["Robinhood Gold Card"], cats["Wholesale Clubs"], "cashback", 3, None),
+    (cards["Robinhood Gold Card"], cats["Utilities"], "cashback", 3, None),
+    (cards["Robinhood Gold Card"], cats["Home Improvement"], "cashback", 3, None),
+    (cards["Robinhood Gold Card"], cats["Entertainment"], "cashback", 3, None),
     (cards["Robinhood Gold Card"], cats["Other"], "cashback", 3, "Requires Robinhood Gold ($5/mo)"),
 
     # US Bank Platinum - $0/yr, no rewards (0% intro APR card)
@@ -98,6 +104,12 @@ rewards = [
     (cards["Wells Fargo Active Cash"], cats["Travel"], "cashback", 2, None),
     (cards["Wells Fargo Active Cash"], cats["Online Shopping"], "cashback", 2, None),
     (cards["Wells Fargo Active Cash"], cats["Streaming"], "cashback", 2, None),
+    (cards["Wells Fargo Active Cash"], cats["Wholesale Clubs"], "cashback", 2, None),
+    (cards["Wells Fargo Active Cash"], cats["Utilities"], "cashback", 2, None),
+    (cards["Wells Fargo Active Cash"], cats["Home Improvement"], "cashback", 2, None),
+    (cards["Wells Fargo Active Cash"], cats["Entertainment"], "cashback", 2, None),
+    (cards["Wells Fargo Active Cash"], cats["Transit"], "cashback", 2, None),
+    (cards["Wells Fargo Active Cash"], cats["Drug Stores"], "cashback", 2, None),
     (cards["Wells Fargo Active Cash"], cats["Other"], "cashback", 2, None),
 ]
 

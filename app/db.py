@@ -64,8 +64,17 @@ def init_db():
             end_date TEXT,
             used INTEGER DEFAULT 0,
             used_date TEXT,
+            hidden INTEGER DEFAULT 0,
             notes TEXT,
             created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (card_id) REFERENCES cards(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS benefits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            card_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
             FOREIGN KEY (card_id) REFERENCES cards(id)
         );
 

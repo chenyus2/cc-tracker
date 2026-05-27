@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set active_page = "benefits" %}
+
+{% block content %}
+<h2 class="section-title" style="margin-bottom: 24px;">Card Benefits & Perks</h2>
+
+{% set ns = namespace(current_card='') %}
+{% for b in benefits %}
+    {% if b.card_name != ns.current_card %}
+        {% if ns.current_card != '' %}</div>{% endif %}
+        {% set ns.current_card = b.card_name %}
+        <div class="card-section">
+            <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px;">
+                {{ b.card_name }}
+                <span style="font-size: 12px; color: #8b949e; font-weight: 400;">{{ b.issuer }}</span>
+            </div>
+    {% endif %}
+    <div style="padding: 8px 0; border-top: 1px solid #21262d;">
+        <div style="font-weight: 500;">{{ b.title }}</div>
+        <div style="font-size: 13px; color: #8b949e; margin-top: 2px;">{{ b.description }}</div>
+    </div>
+{% endfor %}
+{% if benefits %}</div>{% endif %}
+
+{% if not benefits %}
+<div class="empty-state">
+    <p>No benefits recorded yet.</p>
+</div>
+{% endif %}
+{% endblock %}

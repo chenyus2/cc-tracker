@@ -267,6 +267,19 @@ def coupons_page():
                            show_hidden=show_hidden, hidden_count=hidden_count)
 
 
+@app.route("/benefits")
+def benefits_page():
+    conn = get_db()
+    benefits = [dict(r) for r in conn.execute("""
+        SELECT b.*, c.name as card_name, c.issuer
+        FROM benefits b
+        JOIN cards c ON b.card_id = c.id
+        ORDER BY c.issuer, c.name, b.title
+    """).fetchall()]
+    conn.close()
+    return render_template("benefits.html", benefits=benefits)
+
+
 @app.route("/api/coupons", methods=["POST"])
 def add_coupon():
     data = request.form
@@ -349,6 +362,7 @@ def seed_if_empty():
         subprocess.run([sys.executable, os.path.join(app_dir, "seed_cards.py")], check=True)
         subprocess.run([sys.executable, os.path.join(app_dir, "seed_rewards.py")], check=True)
         subprocess.run([sys.executable, os.path.join(app_dir, "seed_coupons.py")], check=True)
+        subprocess.run([sys.executable, os.path.join(app_dir, "seed_benefits.py")], check=True)
         print("Database seeded.")
 
 

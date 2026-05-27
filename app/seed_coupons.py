@@ -79,14 +79,10 @@ coupons += monthly_credits(cards["Chase Sapphire Preferred"], "DoorDash Monthly 
     "DoorDash (groceries, retail, restaurants)",
     10, "Monthly promo - through 12/31/2027")
 
-# DashPass membership (value $120/yr) - complimentary through 12/31/2027
-coupons.append((cards["Chase Sapphire Preferred"], "DoorDash DashPass Membership", "DoorDash", "dollar", 0, None, "2026-01-01", "2026-12-31", "Complimentary DashPass - $0 delivery fees, reduced service fees - through 12/31/2027"))
-
-# 5x on Lyft (through 9/30/2027)
-coupons.append((cards["Chase Sapphire Preferred"], "5x Points on Lyft", "Lyft", "dollar", 0, None, "2026-01-01", "2026-12-31", "5x UR points on Lyft rides - through 9/30/2027"))
-
-# 10% anniversary points bonus
-coupons.append((cards["Chase Sapphire Preferred"], "10% Anniversary Points Bonus", "Chase", "dollar", 0, None, "2026-10-01", "2026-10-31", "10% bonus on all points earned in prior card year - auto-applied"))
+# Benefits (not actionable coupons):
+# - DashPass membership (complimentary through 12/31/2027)
+# - 5x UR points on Lyft (through 9/30/2027)
+# - 10% anniversary points bonus (auto-applied)
 
 # $100 Global Entry / TSA PreCheck (every 4 years)
 coupons.append((cards["Chase Sapphire Preferred"], "Global Entry / TSA PreCheck Credit", "Global Entry or TSA PreCheck", "dollar", 100, None, "2026-01-01", "2026-12-31", "Once every 4 years - statement credit on application fee"))
@@ -123,17 +119,13 @@ coupons.append((cards["Chase United Quest"], "JSX Flight Credit", "JSX", "dollar
 # $80/yr Avis/Budget credit ($40 x 2 rentals)
 coupons.append((cards["Chase United Quest"], "Avis/Budget Car Rental Credit", "Avis or Budget (via cars.united.com)", "dollar", 80, None, "2026-01-01", "2026-12-31", "Annual - $40 TravelBank cash per rental, up to 2 rentals via cars.united.com"))
 
-# 25% back on United inflight purchases
-coupons.append((cards["Chase United Quest"], "United Inflight 25% Back", "United Airlines (inflight WiFi, food, drinks)", "percent", 25, None, "2026-01-01", "2026-12-31", "Ongoing - 25% statement credit on inflight purchases"))
+# Benefits (not actionable coupons):
+# - 25% back on United inflight purchases (statement credit)
 
-# 2 free checked bags
-coupons.append((cards["Chase United Quest"], "2 Free Checked Bags", "United Airlines", "dollar", 0, None, "2026-01-01", "2026-12-31", "Ongoing - 2 free checked bags for you + companion on same reservation"))
-
-# 10% off UA award flights
-coupons.append((cards["Chase United Quest"], "10% Off United Award Flights", "United Airlines (MileagePlus redemptions)", "percent", 10, None, "2026-01-01", "2026-12-31", "Ongoing - 10% fewer miles needed for award flights"))
-
-# 10,000-mile award discount (on anniversary + after $20k spend/yr)
-coupons.append((cards["Chase United Quest"], "10,000-Mile Award Discount", "United Airlines", "dollar", 0, None, "2026-01-01", "2026-12-31", "Annual on anniversary + after $20k calendar year spend"))
+# Benefits (not actionable coupons):
+# - 2 free checked bags (you + companion on same reservation)
+# - 10% off United award flights
+# - 10,000-mile award discount (on anniversary + after $20k spend/yr)
 
 # $100 Global Entry / TSA PreCheck
 coupons.append((cards["Chase United Quest"], "Global Entry / TSA PreCheck Credit", "Global Entry or TSA PreCheck", "dollar", 100, None, "2026-01-01", "2026-12-31", "Once every 4 years"))
@@ -151,16 +143,12 @@ coupons.append((cards["Citi Strata Premier"], "Global Entry / TSA PreCheck Credi
 # ============================================================
 # CHASE FREEDOM FLEX ($0/yr)
 # ============================================================
-
-# Cell phone protection
-coupons.append((cards["Chase Freedom Flex"], "Cell Phone Protection", "Cell phone bill paid with card", "dollar", 800, None, "2026-01-01", "2026-12-31", "Up to $800/claim, $1000/yr max, $50 deductible - pay monthly phone bill with this card"))
+# Cell phone protection: Up to $800/claim, $1000/yr max, $50 deductible - pay monthly phone bill with this card
 
 # ============================================================
 # WELLS FARGO ACTIVE CASH ($0/yr)
 # ============================================================
-
-# Cell phone protection
-coupons.append((cards["Wells Fargo Active Cash"], "Cell Phone Protection", "Cell phone bill paid with card", "dollar", 600, None, "2026-01-01", "2026-12-31", "Up to $600/claim, $25 deductible - pay monthly phone bill with this card"))
+# Cell phone protection: Up to $600/claim, $25 deductible - pay monthly phone bill with this card
 
 # ============================================================
 # Cards with NO recurring credits/perks:
@@ -180,6 +168,14 @@ for card_id, title, merchant, dtype, value, min_spend, start, end, notes in coup
         "INSERT INTO coupons (card_id, title, merchant, discount_type, discount_value, min_spend, start_date, end_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (card_id, title, merchant, dtype, value, min_spend, start, end, notes)
     )
+
+# Default-hidden coupons (user preference)
+hidden_titles = [
+    "Disney Bundle Credit",
+    "Instacart Credit",
+]
+for title in hidden_titles:
+    conn.execute("UPDATE coupons SET hidden = 1 WHERE title = ?", (title,))
 
 conn.commit()
 conn.close()
